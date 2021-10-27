@@ -2,6 +2,9 @@
 //                                                                  //
 //                    Manual de utilizare                           //
 //                                                                  //
+//  Se va deschide 'LC1 propozitii.cbp' in codeblocks si se va      //
+//  folosi date.in pentru intrare si consola pentru output.         //
+//                                                                  //
 //  Se vor folosi urmatoarele simboluri pentru conectorii logici:   //
 //      '!'  - Negatie     (NU)                                     //
 //      '&&' - Conjunctie  (SI)                                     //
