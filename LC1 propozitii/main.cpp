@@ -25,6 +25,7 @@
 using namespace std;
 
 char c[12801];
+bool valProp[256],folosit[256];
 int i,j;
 
 struct nod                      //creearea tipului de date care va retine fiecare nod al arborelui propozitiei de verificat
@@ -35,7 +36,7 @@ struct nod                      //creearea tipului de date care va retine fiecar
 
 void afis(int pozi, int pozf)       //afisarea tuturor caracterelor dintre 2 pozitii in sirul de caractere citit
 {
-    for(int ii=pozi;ii<=pozf;ii++)
+    for(int ii=pozi; ii<=pozf; ii++)
     {
         cout<<c[ii];
     }
@@ -46,10 +47,10 @@ bool rezolv(nod *x)             // daca subprogramul va returna 0, atunci o eroa
     int neg=0,init;
     char A,s1,s2,B;
     init=i-1;
-        afis(init,i-1);
-        cout<<" asteapta o paranteza deschisa, o variabila propozitionala sau '!'.\nPropozitia curenta:";
-        afis(0,i-1);
-        cout<<"\n\n";
+    afis(init,i-1);
+    cout<<" asteapta o paranteza deschisa, o variabila propozitionala sau '!'.\nPropozitia curenta:";
+    afis(0,i-1);
+    cout<<"\n\n";
     {
         A=c[i++];
         if(A=='(')
@@ -69,7 +70,11 @@ bool rezolv(nod *x)             // daca subprogramul va returna 0, atunci o eroa
         {
             cout<<j++<<". "<<c[i-1]<<"\n";
             x->a=new nod;
-            x->a->val=1;
+            x->a->val=valProp[c[i-1]];
+            if(valProp[0]==1)
+            {
+                cout<<"Valoarea de adevar a "<<c[i-1]<<": "<<valProp[c[i-1]]<<"\n";
+            }
         }
         else if(A=='!')
         {
@@ -100,18 +105,22 @@ bool rezolv(nod *x)             // daca subprogramul va returna 0, atunci o eroa
         if(s1=='&'&&s2=='&')
         {
             x->val=1;
+            neg=2;
         }
         else if(s1=='|'&&s2=='|')
         {
             x->val=1;
+            neg=3;
         }
         else if(s1=='='&&s2=='>')
         {
             x->val=1;
+            neg=4;
         }
         else if(s1=='<'&&s2=='>')
         {
             x->val=1;
+            neg=5;
         }
         else
         {
@@ -123,10 +132,10 @@ bool rezolv(nod *x)             // daca subprogramul va returna 0, atunci o eroa
     }
 
 
-        afis(init,i-1);
-        cout<<" asteapta o paranteza deschisa sau o variabila propozitionala.\nPropozitia curenta:";
-        afis(0,i-1);
-        cout<<"\n\n";
+    afis(init,i-1);
+    cout<<" asteapta o paranteza deschisa sau o variabila propozitionala.\nPropozitia curenta:";
+    afis(0,i-1);
+    cout<<"\n\n";
 
     {
         B=c[i++];
@@ -150,11 +159,16 @@ bool rezolv(nod *x)             // daca subprogramul va returna 0, atunci o eroa
         {
             cout<<j++<<". "<<c[i-1]<<"\n";
             x->b=new nod;
-            x->b->val=1;
+            x->b->val=valProp[c[i-1]];
             afis(init,i-1);
             cout<<" asteapta o paranteza inchisa.\nPropozitia curenta:";
             afis(0,i-1);
+            if(valProp[0]==1)
+            {
+                cout<<"Valoarea de adevar a "<<c[i-1]<<": "<<valProp[c[i-1]]<<"\n";
+            }
             cout<<"\n\n";
+
         }
         else
         {
@@ -169,6 +183,40 @@ bool rezolv(nod *x)             // daca subprogramul va returna 0, atunci o eroa
     if(c[i++]==')')
     {
         cout<<j++<<". "<<c[i-1]<<" vrea sa inchida propozitia complexa.\n";
+        if(valProp[0]==1)
+        {
+            switch(neg)
+            {
+                case 1:
+                {
+                    x->val=!x->b->val;
+                    break;
+                }
+                case 2:
+                {
+                    x->val=x->a->val&&x->b->val;
+                    break;
+                }
+                case 3:
+                {
+                    x->val=x->a->val||x->b->val;
+                    break;
+                }
+                case 4:
+                {
+                    x->val=(!x->a->val)||x->b->val;
+                    break;
+                }
+                case 5:
+                {
+                    x->val=(x->a->val||x->b->val)&&(!(x->val=x->a->val&&x->b->val));
+                    break;
+                }
+            }
+            cout<<"Valoarea de adevar a ";
+            afis(init,i-1);
+            cout<<": "<<x->val<<"\n";
+        }
         cout<<"Nu s-a gasit nicio greseala in";
         afis(init,i-1);
         cout<<". Se continua executia...\n";
@@ -176,10 +224,10 @@ bool rezolv(nod *x)             // daca subprogramul va returna 0, atunci o eroa
     }
 
 
-            cout<<j++<<". "<<c[i-1]<<"\n";
-            cout<<"S-a gasit un caracter neasteptat dupa ";
-            afis(init,i-1);
-            cout<<", caracterul asteptat era: ')'. Se iese din executie...\n";
+    cout<<j++<<". "<<c[i-1]<<"\n";
+    cout<<"S-a gasit un caracter neasteptat dupa ";
+    afis(init,i-1);
+    cout<<", caracterul asteptat era: ')'. Se iese din executie...\n";
     return 0;
 }
 
@@ -188,26 +236,301 @@ int main()
 {
     ifstream in("date.in");
     nod *x;
+    int p,cnt,oke,oke2,q;
     x=new nod;
     bool ok=0;
+    char cs[10001];
 
     in.getline(c,12800);
 
     i=0;
+
+    cout<<"Doriti sa introduceti o interpretare?(0/1 pentru NU/DA)    ";
+    cin>>valProp[0];
+
     while(i<strlen(c))
     {
         if(c[i]==' ')
             strcpy(c+i,c+i+1);
         else
+        {
+            if(c[i]<='Z'&&c[i]>='A'&&folosit[c[i]]==0&&valProp[0]==1)
+            {
+                folosit[c[i]]=1;
+                cout<<"Scrieti valoarea de adevar atribuita lui "<<c[i]<<": ";
+                cin>>valProp[c[i]];
+            }
             i++;
+        }
     }
     i=0;
 
-    cout<<c<<"\n\n";
 
 
+    cout<<c<<"\n"<<"Doriti ca propozitia introdusa sa fie considerata in sintaxa relaxata?(0/1 pentru NU/DA)    ";
+    cin>>p;
+
+    if(p)
+    {
+        i=strlen(c)-1;
+        while(i>0)
+        {
+            oke=0;
+            cnt=0;
+            if(c[i]=='!'&&c[i+1]=='(')
+            {
+                for(p=i+1;p<strlen(c);p++)
+                {
+                    cnt=cnt+(c[p]=='(')-(c[p]==')');
+                    if(cnt==0&&c[p+1]==')')
+                    {
+                        oke=0;
+                        break;
+                    }
+                    if(cnt==0&&c[p+1]!=')')
+                    {
+                        oke=1;
+                        break;
+                    }
+                }
+            }
+            if(c[i]=='!'&&(c[i-1]!='('||oke))
+            {
+                strcpy(cs,c+i);
+                strcpy(c+i+1,cs);
+                c[i]='(';
+                cnt=0;
+                for(p=i+2;p<strlen(c);p++)
+                {
+                    cnt=cnt+(c[p]=='(')-(c[p]==')');
+                    if(cnt==0)
+                    {
+                        strcpy(cs,c+p+1);
+                        strcpy(c+p+2,cs);
+                        c[p+1]=')';
+                        cout<<c<<"\n";
+                        break;
+                    }
+                }
+                if(cnt!=0)
+                {
+                    strcpy(cs,c+p+1);
+                    strcpy(c+p+2,cs);
+                    c[p+1]=')';
+                    cout<<c<<"\n";
+                }
+            }
+            i--;
+        }
+        if(c[i]=='!')
+        {
+            strcpy(cs,c+i);
+            strcpy(c+i+1,cs);
+            c[i]='(';
+            cnt=0;
+            for(p=i+2;p<strlen(c);p++)
+            {
+                cnt=cnt+(c[p]=='(')-(c[p]==')');
+                if(cnt==0)
+                {
+                    strcpy(cs,c+p+1);
+                    strcpy(c+p+2,cs);
+                    c[p+1]=')';
+                    cout<<c<<"\n";
+                    break;
+                }
+            }
+            if(cnt!=0)
+            {
+                strcpy(cs,c+p+1);
+                strcpy(c+p+2,cs);
+                c[p+1]=')';
+                cout<<c<<"\n";
+            }
+        }
+
+        i=strlen(c)-1;
+        while(i>1)
+        {
+            oke=0;
+            cnt=0;
+            if((c[i]=='|'&&c[i-1]=='|')||(c[i]=='&'&&c[i-1]=='&'))
+            {
+                if(/*c[i+1]=='('*/true)
+                {
+                    for(p=i+1;p<strlen(c);p++)
+                    {
+                        cnt=cnt+(c[p]=='(')-(c[p]==')');
+                        if(cnt==0&&c[p+1]==')')
+                        {
+                            oke=0;
+                            break;
+                        }
+                        if(cnt==0&&c[p+1]!=')')
+                        {
+                            oke=1;
+                            break;
+                        }
+                    }
+                }
+
+
+                oke2=0;
+                cnt=0;
+                if(/*c[i-2]==')'*/true)
+                {
+                    for(q=i-2;q>=0;q--)
+                    {
+                        cnt=cnt+(c[q]=='(')-(c[q]==')');
+                        if(cnt==0&&c[q-1]=='(')
+                        {
+                            oke2=0;
+                            break;
+                        }
+                        if(cnt==0&&c[q-1]!='(')
+                        {
+                            oke2=1;
+                            break;
+                        }
+                    }
+                }
+                if(oke||oke2)
+                {
+                    strcpy(cs,c+p+1);
+                    strcpy(c+p+2,cs);
+                    c[p+1]=')';
+                    strcpy(cs,c+q);
+                    strcpy(c+q+1,cs);
+                    c[q]='(';
+                    cout<<c<<"\n";
+                }
+            }
+            i--;
+        }
+
+        i=strlen(c)-1;
+        while(i>1)
+        {
+            oke=0;
+            cnt=0;
+            if(c[i]=='>'&&c[i-1]=='=')
+            {
+                if(/*c[i+1]=='('*/true)
+                {
+                    for(p=i+1;p<strlen(c);p++)
+                    {
+                        cnt=cnt+(c[p]=='(')-(c[p]==')');
+                        if(cnt==0&&c[p+1]==')')
+                        {
+                            oke=0;
+                            break;
+                        }
+                        if(cnt==0&&c[p+1]!=')')
+                        {
+                            oke=1;
+                            break;
+                        }
+                    }
+                }
+
+
+                oke2=0;
+                cnt=0;
+                if(/*c[i-2]==')'*/true)
+                {
+                    for(q=i-2;q>=0;q--)
+                    {
+                        cnt=cnt+(c[q]=='(')-(c[q]==')');
+                        if(cnt==0&&c[q-1]=='(')
+                        {
+                            oke2=0;
+                            break;
+                        }
+                        if(cnt==0&&c[q-1]!='(')
+                        {
+                            oke2=1;
+                            break;
+                        }
+                    }
+                }
+                if(oke||oke2)
+                {
+                    strcpy(cs,c+p+1);
+                    strcpy(c+p+2,cs);
+                    c[p+1]=')';
+                    strcpy(cs,c+q);
+                    strcpy(c+q+1,cs);
+                    c[q]='(';
+                    cout<<c<<"\n";
+                }
+            }
+            i--;
+        }
+
+        i=strlen(c)-1;
+        while(i>1)
+        {
+            oke=0;
+            cnt=0;
+            if(c[i]=='>'&&c[i-1]=='<')
+            {
+                if(/*c[i+1]=='('*/true)
+                {
+                    for(p=i+1;p<strlen(c);p++)
+                    {
+                        cnt=cnt+(c[p]=='(')-(c[p]==')');
+                        if(cnt==0&&c[p+1]==')')
+                        {
+                            oke=0;
+                            break;
+                        }
+                        if(cnt==0&&c[p+1]!=')')
+                        {
+                            oke=1;
+                            break;
+                        }
+                    }
+                }
+
+
+                oke2=0,q;
+                cnt=0;
+                if(/*c[i-2]==')'*/true)
+                {
+                    for(q=i-2;q>=0;q--)
+                    {
+                        cnt=cnt+(c[q]=='(')-(c[q]==')');
+                        if(cnt==0&&c[q-1]=='(')
+                        {
+                            oke2=0;
+                            break;
+                        }
+                        if(cnt==0&&c[q-1]!='(')
+                        {
+                            oke2=1;
+                            break;
+                        }
+                    }
+                }
+                if(oke||oke2)
+                {
+                    strcpy(cs,c+p+1);
+                    strcpy(c+p+2,cs);
+                    c[p+1]=')';
+                    strcpy(cs,c+q);
+                    strcpy(c+q+1,cs);
+                    c[q]='(';
+                    cout<<c<<"\n";
+                }
+            }
+            i--;
+        }
+    }
+
+    cout<<"\n"<<c<<"\n\n";
+    i=0;
     if(c[i]=='(')
-{
+    {
         cout<<j++<<". "<<c[i]<<" vrea sa fie o propozitie complexa.\n";
         i++;
         x->a=new nod;
@@ -225,12 +548,18 @@ int main()
         }
         else if(i==strlen(c))
         {
-            cout<<"\n\nCorect. Programul nu a gasit nicio greseala in scrierea propozitiei logice.\n\n\n";
+            cout<<"\n\nCorect. Programul nu a gasit nicio greseala in scrierea propozitiei logice.\n";
+
+            if(valProp[0]==1)
+            {
+                cout<<"Valoarea de adevar a expresiei: "<<x->a->val<<"\n";
+            }
         }
         else
         {
             cout<<"\n\nGresit, se mai gasesc caractere dupa sfarsitul propozitiei\n\n\n";
         }
+            cout<<"\n\n";
     }
     in.close();
     return 0;
